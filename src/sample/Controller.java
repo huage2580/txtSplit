@@ -166,7 +166,7 @@ public class Controller {
         if (file == null){
             return ;
         }
-        String bookName = file.getName().replaceAll(".txt","");
+        String bookName = file.getName().replaceAll(".txt","").replaceAll(".TXT","");
         File newDir = new File(file.getParentFile(),bookName);
         if (newDir.exists()) {
             newDir.delete();
