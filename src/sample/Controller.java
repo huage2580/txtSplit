@@ -53,8 +53,13 @@ public class Controller {
 
     @FXML
     private void output(ActionEvent event){
-        startOutput();
-        showSuccess();
+        if (list.getItems().size() == 0){//没有切割章节，按每100行输出的规则切割
+            startOutputPreLine();
+            showSuccess2();
+        }else {
+            startOutput();
+            showSuccess();
+        }
     }
 
     private void showSuccess(){
@@ -62,6 +67,15 @@ public class Controller {
         alert.setTitle("输出成功");
         alert.setHeaderText(null);
         alert.setContentText("文件切割完成，请到txt目录下找同名文件夹");
+
+        alert.showAndWait();
+    }
+
+    private void showSuccess2(){
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("输出成功");
+        alert.setHeaderText(null);
+        alert.setContentText("文件[没有匹配章节，按照行数切割]完成，请到txt目录下找同名文件夹");
 
         alert.showAndWait();
     }
@@ -93,6 +107,58 @@ public class Controller {
             e.printStackTrace();
         }
         return new ArrayList<>();
+    }
+
+
+    private void startOutputPreLine(){
+        if (file == null){
+            return ;
+        }
+        String bookName = file.getName().replaceAll(".txt","");
+        File newDir = new File(file.getParentFile(),bookName);
+        if (newDir.exists()) {
+            newDir.delete();
+        }
+        newDir.mkdir();
+        try {
+            File currFile = new File(newDir,"00000-0000.txt");
+
+            FileInputStream inputStream = new FileInputStream(file);
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream,getCharset()));
+
+            FileOutputStream outputStream = new FileOutputStream(currFile);
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8));
+            //正则
+            String line = null;
+            int counter = 1;
+            int lineCount = 0;
+            while ((line = bufferedReader.readLine())!=null){
+                lineCount ++;
+//                System.out.println(line);
+                boolean isMatch = lineCount >100;
+                if (isMatch){
+                    lineCount = 0;
+                    writer.flush();
+                    writer.close();
+                    String newFileName = formatIndex(counter) +"-"+"x"+".txt";
+                    currFile = new File(newDir,newFileName);
+                    outputStream = new FileOutputStream(currFile);
+                    writer = new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8));
+                    counter += 1;
+                }
+                writer.write(line);
+                writer.write("\n");
+                writer.flush();
+            }
+            writer.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        //压缩文件
+        FileTOZip.fileToZip(newDir,new File(newDir.getParent(),bookName+".zip"),bookName);
+
     }
 
 
