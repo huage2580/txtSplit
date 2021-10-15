@@ -150,7 +150,7 @@ public class Controller {
     }
 
     private String formatFileName(String name){
-        return name.replaceAll("[\\/?*|\\\\<>\"':]","").trim();
+        return name.replaceAll("[\\/?*|\\\\<>\"':\t]","").replace((char) 12288,' ').trim();
     }
 
     private boolean matchLine(String line,String regexRule){
